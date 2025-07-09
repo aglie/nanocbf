@@ -10,7 +10,7 @@
 const std::vector<uint8_t> CbfFrame::CBF_MAGIC = {0x0C, 0x1A, 0x04, 0xD5};
 const std::string CbfFrame::CBF_TAIL = std::string(4095, '\0') + "\r\n--CIF-BINARY-FORMAT-SECTION----\r\n;\r\n\r\n";
 
-CbfFrame::CbfFrame() : m_width(0), m_height(0) {}
+CbfFrame::CbfFrame() : width(0), height(0) {}
 
 CbfFrame::~CbfFrame() {}
 
@@ -34,11 +34,11 @@ bool CbfFrame::read(const std::string& filename) {
     
     // Extract header (everything before magic number)
     size_t headerSize = std::distance(fileData.begin(), magicIt);
-    m_header = std::string(fileData.begin(), fileData.begin() + headerSize);
+    header = std::string(fileData.begin(), fileData.begin() + headerSize);
     
     // Parse binary info from header
     int dataSize;
-    if (!parseBinaryInfo(m_header, m_width, m_height, dataSize)) {
+    if (!parseBinaryInfo(header, width, height, dataSize)) {
         return false;
     }
     
@@ -52,13 +52,13 @@ bool CbfFrame::read(const std::string& filename) {
     std::vector<uint8_t> binaryData(fileData.begin() + binaryStart, fileData.begin() + binaryStart + dataSize);
     
     // Decompress binary data
-    m_data = decompressData(binaryData, m_width, m_height);
+    data = decompressData(binaryData, width, height);
     
     return true;
 }
 
 bool CbfFrame::write(const std::string& filename) const {
-    if (m_data.empty() || m_width == 0 || m_height == 0) {
+    if (data.empty() || width == 0 || height == 0) {
         return false;
     }
     
@@ -68,13 +68,13 @@ bool CbfFrame::write(const std::string& filename) const {
     }
     
     // Write header
-    file.write(m_header.c_str(), m_header.size());
+    file.write(header.c_str(), header.size());
     
     // Write magic number
     file.write(reinterpret_cast<const char*>(CBF_MAGIC.data()), CBF_MAGIC.size());
     
     // Compress and write binary data
-    std::vector<uint8_t> compressed = compressData(m_data);
+    std::vector<uint8_t> compressed = compressData(data);
     file.write(reinterpret_cast<const char*>(compressed.data()), compressed.size());
     
     // Write tail
@@ -83,23 +83,6 @@ bool CbfFrame::write(const std::string& filename) const {
     return true;
 }
 
-void CbfFrame::setHeader(const std::string& header) {
-    m_header = header;
-}
-
-const std::string& CbfFrame::getHeader() const {
-    return m_header;
-}
-
-void CbfFrame::setData(const std::vector<int32_t>& data, int width, int height) {
-    m_data = data;
-    m_width = width;
-    m_height = height;
-}
-
-const std::vector<int32_t>& CbfFrame::getData() const {
-    return m_data;
-}
 
 bool CbfFrame::parseBinaryInfo(const std::string& header, int& width, int& height, int& dataSize) const {
     std::regex widthRegex(R"(X-Binary-Size-Fastest-Dimension:\s+(\d+))");

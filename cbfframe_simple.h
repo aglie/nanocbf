@@ -16,33 +16,19 @@ public:
     // Write CBF file
     bool write(const std::string& filename) const;
     
-    // Set text header (will be written before binary data)
-    void setHeader(const std::string& header);
-    
-    // Get text header
-    const std::string& getHeader() const;
-    
-    // Set binary data
-    void setData(const std::vector<int32_t>& data, int width, int height);
-    
-    // Get binary data
-    const std::vector<int32_t>& getData() const;
-    
-    // Get dimensions
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
-    
     // Get error message
     const std::string& getError() const { return m_error; }
+    
+    // Public accessible fields
+    std::string header;
+    std::vector<int32_t> data;  // 1D vector of pixel data
+    int width;
+    int height;
     
 private:
     static const std::vector<uint8_t> CBF_MAGIC;
     static const std::string CBF_TAIL;
     
-    std::string m_header;
-    std::vector<int32_t> m_data;
-    int m_width;
-    int m_height;
     std::string m_error;
     
     // Binary data compression/decompression
