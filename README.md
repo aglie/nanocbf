@@ -2,6 +2,8 @@
 
 A minimal, fast C++ library for reading and writing CBF (Crystallographic Binary Format) files.
 
+**Authors**: Arkadiy Simonov and Vadim Dyadkin
+
 ## Features
 
 - **Simple API**: Very minimal API, which provides no help in reading cif headers.
@@ -157,3 +159,12 @@ _array_data.header_contents
 - `bool read(const std::string& filename)` - Read CBF file
 - `bool write(const std::string& filename)` - Write CBF file
 - `const std::string& getError()` - Get error message
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Authors
+
+- **Arkadiy Simonov**
+- **Vadim Dyadkin**
