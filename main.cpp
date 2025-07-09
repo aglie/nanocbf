@@ -63,6 +63,15 @@ _array_data.header_contents
     if (frame3.read("../test_data/Y-CORRECTIONS.cbf")) {
         std::cout << "Successfully read CBF file from XDS" << std::endl;
         std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;
+        std::cout << "Header" << std::endl << frame3.header << std::endl;
+    } else {
+        std::cout << "Failed to read CBF file: " << readFrame.getError() << std::endl;
+    }
+
+    if (frame3.read("../test_data/two_thirds_01_03579.cbf")) {
+        std::cout << "Successfully read CBF file from XDS" << std::endl;
+        std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;
+        std::cout << "Header" << std::endl << frame3.header << std::endl;
     } else {
         std::cout << "Failed to read CBF file: " << readFrame.getError() << std::endl;
     }

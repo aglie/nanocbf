@@ -8,7 +8,7 @@
 
 // CBF magic number and tail
 const std::vector<uint8_t> CbfFrame::CBF_MAGIC = {0x0C, 0x1A, 0x04, 0xD5};
-const std::string CbfFrame::CBF_TAIL = std::string(4095, '\0') + "\r\n--CIF-BINARY-FORMAT-SECTION----\r\n;\r\n\r\n";
+const std::string CbfFrame::CBF_TAIL = std::string(4095, '\0') + "\n--CIF-BINARY-FORMAT-SECTION----\n;\n\n";
 
 CbfFrame::CbfFrame() : width(0), height(0) {}
 
@@ -25,31 +25,77 @@ bool CbfFrame::read(const std::string& filename) {
     std::vector<uint8_t> fileData((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     file.close();
     
-    // Find magic number
-    auto magicIt = std::search(fileData.begin(), fileData.end(), CBF_MAGIC.begin(), CBF_MAGIC.end());
-    if (magicIt == fileData.end()) {
-        m_error = "Could not find CBF magic number";
+    // Find _array_data.data section (this is where user header should end)
+    std::string fileContent(fileData.begin(), fileData.end());
+    size_t arrayDataPos = fileContent.find("_array_data.data");
+    if (arrayDataPos == std::string::npos) {
+        m_error = "Could not find _array_data.data section";
         return false;
     }
     
-    // Extract header (everything before magic number)
-    size_t headerSize = std::distance(fileData.begin(), magicIt);
-    header = std::string(fileData.begin(), fileData.begin() + headerSize);
+    // Find binary format section start
+    size_t binaryStartPos = fileContent.find("--CIF-BINARY-FORMAT-SECTION--", arrayDataPos);
+    if (binaryStartPos == std::string::npos) {
+        m_error = "Could not find --CIF-BINARY-FORMAT-SECTION-- marker";
+        return false;
+    }
     
-    // Parse binary info from header
+    // Find binary format section end
+    size_t binaryEndPos = fileContent.find("--CIF-BINARY-FORMAT-SECTION----", binaryStartPos);
+    if (binaryEndPos == std::string::npos) {
+        m_error = "Could not find --CIF-BINARY-FORMAT-SECTION---- end marker";
+        return false;
+    }
+    
+    // Extract text header (everything before _array_data.data section)
+    // Need to find the actual start of user content (after data_filename section)
+    size_t dataPos = fileContent.find("data_");
+    if (dataPos == std::string::npos) {
+        m_error = "Could not find data_ section";
+        return false;
+    }
+    
+    // Find end of data_filename line
+    size_t dataEndPos = fileContent.find("\n", dataPos);
+    if (dataEndPos == std::string::npos) {
+        m_error = "Could not find end of data_ line";
+        return false;
+    }
+    
+    // Skip the empty line after data_filename
+    size_t headerStartPos = dataEndPos + 1;
+    while (headerStartPos < fileContent.size() && 
+           (fileContent[headerStartPos] == '\r' || fileContent[headerStartPos] == '\n')) {
+        headerStartPos++;
+    }
+    
+    // Extract header from after data section to before _array_data.data
+    header = fileContent.substr(headerStartPos, arrayDataPos - headerStartPos);
+    
+    // Extract binary section header (between the section markers)
+    std::string binaryHeader = fileContent.substr(binaryStartPos, binaryEndPos - binaryStartPos);
+    
+    // Parse binary info from binary section header
     int dataSize;
-    if (!parseBinaryInfo(header, width, height, dataSize)) {
+    if (!parseBinaryInfo(binaryHeader, width, height, dataSize)) {
+        return false;
+    }
+    
+    // Find magic number after the binary section header
+    auto magicIt = std::search(fileData.begin() + binaryStartPos, fileData.end(), CBF_MAGIC.begin(), CBF_MAGIC.end());
+    if (magicIt == fileData.end()) {
+        m_error = "Could not find CBF magic number after binary section header";
         return false;
     }
     
     // Extract binary data (after magic number)
-    size_t binaryStart = headerSize + CBF_MAGIC.size();
-    if (binaryStart + dataSize > fileData.size()) {
+    size_t binaryDataStart = std::distance(fileData.begin(), magicIt) + CBF_MAGIC.size();
+    if (binaryDataStart + dataSize > fileData.size()) {
         m_error = "File truncated - not enough binary data";
         return false;
     }
     
-    std::vector<uint8_t> binaryData(fileData.begin() + binaryStart, fileData.begin() + binaryStart + dataSize);
+    std::vector<uint8_t> binaryData(fileData.begin() + binaryDataStart, fileData.begin() + binaryDataStart + dataSize);
     
     // Decompress binary data
     data = decompressData(binaryData, width, height);
@@ -216,21 +262,21 @@ std::string CbfFrame::generateArrayDataSection(const std::vector<uint8_t>& compr
     std::string md5Hash = generateMD5(compressedData);
     
     std::ostringstream oss;
-    oss << "_array_data.data\r\n"
-        << ";\r\n"
-        << "--CIF-BINARY-FORMAT-SECTION--\r\n"
-        << "Content-Type: application/octet-stream;\r\n"
-        << "     conversions=\"x-CBF_BYTE_OFFSET\"\r\n"
-        << "Content-Transfer-Encoding: BINARY\r\n"
-        << "X-Binary-Size: " << compressedData.size() << "\r\n"
-        << "X-Binary-ID: 1\r\n"
-        << "X-Binary-Element-Type: \"signed 32-bit integer\"\r\n"
-        << "X-Binary-Element-Byte-Order: LITTLE_ENDIAN\r\n"
-        << "Content-MD5: " << md5Hash << "\r\n"
-        << "X-Binary-Number-of-Elements: " << (width * height) << "\r\n"
-        << "X-Binary-Size-Fastest-Dimension: " << width << "\r\n"
-        << "X-Binary-Size-Second-Dimension: " << height << "\r\n"
-        << "X-Binary-Size-Padding: 4095\r\n\r\n";
+    oss << "_array_data.data\n"
+        << ";\n"
+        << "--CIF-BINARY-FORMAT-SECTION--\n"
+        << "Content-Type: application/octet-stream;\n"
+        << "     conversions=\"x-CBF_BYTE_OFFSET\"\n"
+        << "Content-Transfer-Encoding: BINARY\n"
+        << "X-Binary-Size: " << compressedData.size() << "\n"
+        << "X-Binary-ID: 1\n"
+        << "X-Binary-Element-Type: \"signed 32-bit integer\"\n"
+        << "X-Binary-Element-Byte-Order: LITTLE_ENDIAN\n"
+        << "Content-MD5: " << md5Hash << "\n"
+        << "X-Binary-Number-of-Elements: " << (width * height) << "\n"
+        << "X-Binary-Size-Fastest-Dimension: " << width << "\n"
+        << "X-Binary-Size-Second-Dimension: " << height << "\n"
+        << "X-Binary-Size-Padding: 4095\n\n";
     
     return oss.str();
 }
@@ -239,18 +285,18 @@ std::string CbfFrame::generateCbfPrefix(const std::string& filename) const {
     std::string baseName = extractBaseName(filename);
     
     std::ostringstream oss;
-    oss << "###CBF: VERSION 1.5 generated by nanocbf\r\n"
-        << "data_" << baseName << "\r\n\r\n";
+    oss << "###CBF: VERSION 1.5 generated by nanocbf\n"
+        << "data_" << baseName << "\n\n";
     
     return oss.str();
 }
 
 std::string CbfFrame::generateDefaultHeader() const {
     std::ostringstream oss;
-    oss << "_array_data.header_convention \"nanocbf empty\"\r\n"
-        << "_array_data.header_contents\r\n"
-        << ";\r\n"
-        << ";\r\n\r\n";
+    oss << "_array_data.header_convention \"nanocbf empty\"\n"
+        << "_array_data.header_contents\n"
+        << ";\n"
+        << ";\n\n";
     
     return oss.str();
 }
@@ -264,6 +310,13 @@ std::string CbfFrame::extractBaseName(const std::string& filepath) const {
     size_t dotPos = filename.find_last_of('.');
     if (dotPos != std::string::npos && filename.substr(dotPos) == ".cbf") {
         filename = filename.substr(0, dotPos);
+    }
+    
+    // Replace all whitespace characters with underscores
+    for (char& c : filename) {
+        if (std::isspace(c)) {
+            c = '_';
+        }
     }
     
     return filename;
