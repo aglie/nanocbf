@@ -20,7 +20,7 @@ public:
     const std::string& getError() const { return m_error; }
     
     // Public accessible fields
-    std::string header;
+    std::string header;         // User-provided header content (everything after data_filename section)
     std::vector<int32_t> data;  // 1D vector of pixel data
     int width;
     int height;
@@ -43,6 +43,18 @@ private:
     
     // Parse binary header info from text header
     bool parseBinaryInfo(const std::string& header, int& width, int& height, int& dataSize) const;
+    
+    // Generate the _array_data.data section with binary metadata
+    std::string generateArrayDataSection(const std::vector<uint8_t>& compressedData) const;
+    
+    // Generate CBF header prefix with version and data section name
+    std::string generateCbfPrefix(const std::string& filename) const;
+    
+    // Generate minimal default header if user header is empty
+    std::string generateDefaultHeader() const;
+    
+    // Extract filename without extension and path
+    std::string extractBaseName(const std::string& filepath) const;
     
     // Generate MD5 hash
     std::string generateMD5(const std::vector<uint8_t>& data) const;
