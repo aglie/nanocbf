@@ -72,6 +72,7 @@ _array_data.header_contents
         std::cout << "Successfully read CBF file from XDS" << std::endl;
         std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;
         std::cout << "Header" << std::endl << frame3.header << std::endl;
+        frame3.write("../test_data/test_out.cbf");
     } else {
         std::cout << "Failed to read CBF file: " << readFrame.getError() << std::endl;
     }

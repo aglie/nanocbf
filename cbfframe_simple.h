@@ -58,6 +58,13 @@ private:
     
     // Generate MD5 hash
     std::string generateMD5(const std::vector<uint8_t>& data) const;
+    
+    // MD5 implementation helper functions
+    static std::string bytesToHex(const uint8_t* bytes, size_t length);
+    static std::string bytesToBase64(const uint8_t* bytes, size_t length);
+    static void md5Transform(uint32_t state[4], const uint8_t block[64]);
+    static void md5Update(uint32_t state[4], uint64_t& count, uint8_t buffer[64], const uint8_t* input, size_t length);
+    static void md5Final(uint8_t digest[16], uint32_t state[4], uint64_t count, uint8_t buffer[64]);
 };
 
 #endif // CBFFRAME_SIMPLE_H
