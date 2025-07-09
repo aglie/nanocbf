@@ -145,6 +145,7 @@ bool CbfFrame::parseBinaryInfo(const std::string& header, int& width, int& heigh
     std::regex widthRegex(R"(X-Binary-Size-Fastest-Dimension:\s+(\d+))");
     std::regex heightRegex(R"(X-Binary-Size-Second-Dimension:\s+(\d+))");
     std::regex sizeRegex(R"(X-Binary-Size:\s+(\d+))");
+    std::regex md5Regex(R"(Content-MD5:\s+([^\r\n]+))");
     
     std::smatch match;
     
@@ -165,6 +166,13 @@ bool CbfFrame::parseBinaryInfo(const std::string& header, int& width, int& heigh
         return false;
     }
     dataSize = std::stoi(match[1].str());
+    
+    // MD5 is optional - some files may not have it
+    if (std::regex_search(header, match, md5Regex)) {
+        // Store MD5 for potential validation (though we don't validate it currently)
+        std::string md5Hash = match[1].str();
+        // Could add validation here if needed: validateMD5(md5Hash, binaryData);
+    }
     
     return true;
 }
