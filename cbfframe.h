@@ -1,9 +1,11 @@
-#ifndef CBFFRAME_SIMPLE_H
-#define CBFFRAME_SIMPLE_H
+#ifndef CBFFRAME_H
+#define CBFFRAME_H
 
 #include <vector>
 #include <string>
 #include <cstdint>
+
+namespace nanocbf {
 
 class CbfFrame {
 public:
@@ -67,4 +69,6 @@ private:
     static void md5Final(uint8_t digest[16], uint32_t state[4], uint64_t count, uint8_t buffer[64]);
 };
 
-#endif // CBFFRAME_SIMPLE_H
+} // namespace nanocbf
+
+#endif // CBFFRAME_H

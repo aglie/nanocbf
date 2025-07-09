@@ -1,9 +1,9 @@
 #include <iostream>
 #include <vector>
-#include "cbfframe_simple.h"
+#include "cbfframe.h"
 
 int main() {
-    CbfFrame frame;
+    nanocbf::CbfFrame frame;
     
     // Example: Create a simple 2x2 test image
     std::vector<int32_t> testData = {100, 200, 300, 400};
@@ -21,8 +21,8 @@ int main() {
     }
     
     // Test with custom header
-    CbfFrame frame2;
-    std::string customHeader = R"(_array_data.header_convention "PILATUS_1.2"
+    nanocbf::CbfFrame frame2;
+    std::string customHeader = R"(_array_data.header_convention "CUSTOM"
 _array_data.header_contents
 ;
 # Detector: PILATUS 100K, S/N 60-0100
@@ -44,7 +44,7 @@ _array_data.header_contents
     }
     
     // Read back the default header version
-    CbfFrame readFrame;
+    nanocbf::CbfFrame readFrame;
     if (readFrame.read("test_output.cbf")) {
         std::cout << "Successfully read CBF file" << std::endl;
         std::cout << "Dimensions: " << readFrame.width << "x" << readFrame.height << std::endl;
@@ -59,7 +59,7 @@ _array_data.header_contents
     }
 
     // Read back the default header version
-    CbfFrame frame3;
+    nanocbf::CbfFrame frame3;
     if (frame3.read("../test_data/Y-CORRECTIONS.cbf")) {
         std::cout << "Successfully read CBF file from XDS" << std::endl;
         std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;
@@ -68,14 +68,5 @@ _array_data.header_contents
         std::cout << "Failed to read CBF file: " << readFrame.getError() << std::endl;
     }
 
-    if (frame3.read("../test_data/two_thirds_01_03579.cbf")) {
-        std::cout << "Successfully read CBF file from XDS" << std::endl;
-        std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;
-        std::cout << "Header" << std::endl << frame3.header << std::endl;
-        frame3.write("../test_data/test_out.cbf");
-    } else {
-        std::cout << "Failed to read CBF file: " << readFrame.getError() << std::endl;
-    }
-    
     return 0;
 }

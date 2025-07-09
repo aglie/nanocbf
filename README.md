@@ -11,10 +11,10 @@ A minimal, fast C++ library for reading and writing CBF (Crystallographic Binary
 ## Quick Start
 
 ```cpp
-#include "cbfframe_simple.h"
+#include "cbfframe.h"
 
 // Write CBF file
-CbfFrame frame;
+nanocbf::CbfFrame frame;
 frame.data = {100, 200, 300, 400};  // 1D vector of pixel values
 frame.width = 2;
 frame.height = 2;
@@ -22,7 +22,7 @@ frame.header = ""; // Empty = use default header
 frame.write("output.cbf");
 
 // Read CBF file
-CbfFrame readFrame;
+nanocbf::CbfFrame readFrame;
 readFrame.read("input.cbf");
 std::cout << "Size: " << readFrame.width << "x" << readFrame.height << std::endl;
 ```
@@ -40,7 +40,7 @@ make
 ```cpp
 #include <iostream>
 #include <vector>
-#include "cbfframe_simple.h"
+#include "cbfframe.h"
 
 int main() {
     // ===== WRITING CBF FILES =====
@@ -52,7 +52,7 @@ int main() {
         70,  80,  90
     };
     
-    CbfFrame frame;
+    nanocbf::CbfFrame frame;
     frame.data = imageData;
     frame.width = 3;
     frame.height = 3;
@@ -109,7 +109,7 @@ _array_data.header_contents
     // ===== READING CBF FILES =====
     
     // Read the file we just created
-    CbfFrame readFrame;
+    nanocbf::CbfFrame readFrame;
     if (readFrame.read("detailed_output.cbf")) {
         std::cout << "✓ Successfully read CBF file" << std::endl;
         
@@ -145,7 +145,7 @@ _array_data.header_contents
 
 ## API Reference
 
-### CbfFrame Class
+### nanocbf::CbfFrame Class
 
 **Public Fields:**
 - `std::string header` - Text header content (leave empty for default)
