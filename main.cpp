@@ -3,7 +3,7 @@
 #include "cbfframe.h"
 
 int main() {
-    nanocbf::CbfFrame frame;
+    nanocbf::CBFFrame frame;
     
     // Example: Create a simple 2x2 test image
     std::vector<int32_t> testData = {100, 200, 300, 400};
@@ -21,7 +21,7 @@ int main() {
     }
     
     // Test with custom header
-    nanocbf::CbfFrame frame2;
+    nanocbf::CBFFrame frame2;
     std::string customHeader = R"(_array_data.header_convention "CUSTOM"
 _array_data.header_contents
 ;
@@ -44,7 +44,7 @@ _array_data.header_contents
     }
     
     // Read back the default header version
-    nanocbf::CbfFrame readFrame;
+    nanocbf::CBFFrame readFrame;
     if (readFrame.read("test_output.cbf")) {
         std::cout << "Successfully read CBF file" << std::endl;
         std::cout << "Dimensions: " << readFrame.width << "x" << readFrame.height << std::endl;
@@ -59,7 +59,7 @@ _array_data.header_contents
     }
 
     // Read back the default header version
-    nanocbf::CbfFrame frame3;
+    nanocbf::CBFFrame frame3;
     if (frame3.read("../test_data/Y-CORRECTIONS.cbf")) {
         std::cout << "Successfully read CBF file from XDS" << std::endl;
         std::cout << "Dimensions: " << frame3.width << "x" << frame3.height << std::endl;

@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+//TODO: width, height, headers -> interface?? just to be able to work with an interface later???
+//TODO: might be useful to just read headers without reding the data itself, thought not soooo important
+
+
 #ifndef CBFFRAME_H
 #define CBFFRAME_H
 
@@ -31,10 +35,11 @@
 
 namespace nanocbf {
 
-class CbfFrame {
+class CBFFrame {
 public:
-    CbfFrame();
-    ~CbfFrame();
+    CBFFrame();
+    explicit CBFFrame(const std::string &filename);
+    ~CBFFrame();
     
     // Read CBF file
     bool read(const std::string& filename);
@@ -68,7 +73,7 @@ private:
     uint32_t readInt32LE(const uint8_t* buffer) const;
     
     // Parse binary header info from text header
-    bool parseBinaryInfo(const std::string& header, int& width, int& height, int& dataSize) const;
+    bool parseBinaryInfo(const std::string& header, int& width, int& height, int& dataSize);
     
     // Generate the _array_data.data section with binary metadata
     std::string generateArrayDataSection(const std::vector<uint8_t>& compressedData) const;

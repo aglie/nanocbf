@@ -54,7 +54,7 @@ int main() {
         70,  80,  90
     };
     
-    nanocbf::CbfFrame frame;
+    nanocbf::CBFFrame frame;
     frame.data = imageData;
     frame.width = 3;
     frame.height = 3;
@@ -111,7 +111,7 @@ _array_data.header_contents
     // ===== READING CBF FILES =====
     
     // Read the file we just created
-    nanocbf::CbfFrame readFrame;
+    nanocbf::CBFFrame readFrame;
     if (readFrame.read("detailed_output.cbf")) {
         std::cout << "✓ Successfully read CBF file" << std::endl;
         
@@ -147,7 +147,7 @@ _array_data.header_contents
 
 ## API Reference
 
-### nanocbf::CbfFrame Class
+### nanocbf::CBFFrame Class
 
 **Public Fields:**
 - `std::string header` - Text header content (leave empty for default)
